@@ -6,7 +6,7 @@ const submitBtn = form.querySelector("button[type='submit']");
 form.addEventListener("submit", async function (event) {
   event.preventDefault();
 
-  const url = videoURL.value.trim();
+  let url = videoURL.value.trim();
 
   if (url === "") {
     alert("Please paste a video URL first.");
@@ -20,13 +20,18 @@ form.addEventListener("submit", async function (event) {
     return;
   }
 
+  // Clean trailing tracking parameters from URL
+  if (url.includes("?")) {
+    url = url.split("?")[0];
+  }
+
   const originalBtnText = submitBtn.innerText;
   submitBtn.innerText = "Processing...";
   submitBtn.disabled = true;
 
   try {
-    // Send request to Cobalt API
-    const response = await fetch("https://api.cobalt.tools/api/json", {
+    // Request via CORS proxy to bypass browser restrictions
+    const response = await fetch("https://corsproxy.io/?" + encodeURIComponent("https://api.cobalt.tools/api/json"), {
       method: "POST",
       headers: {
         "Accept": "application/json",
@@ -41,14 +46,16 @@ form.addEventListener("submit", async function (event) {
     const data = await response.json();
 
     if (data.url) {
-      // Redirect to the direct media stream URL
       window.location.href = data.url;
+    } else if (data.picker) {
+      // Handles multi-item posts/slideshows
+      window.location.href = data.picker[0].url;
     } else {
-      alert("Could not process video. Make sure the link is public.");
+      alert("Could not process this link. Make sure the account/video is public.");
     }
   } catch (error) {
     console.error("Download failed:", error);
-    alert("Failed to connect to video service. Try again later.");
+    alert("Service busy or blocked by host. Please try again in a few seconds.");
   } finally {
     submitBtn.innerText = originalBtnText;
     submitBtn.disabled = false;
