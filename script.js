@@ -1,4 +1,3 @@
-// Get the form and input elements
 const form = document.querySelector("form");
 const videoURL = document.querySelector("#video-url");
 const quality = document.querySelector("#quality");
@@ -26,7 +25,7 @@ form.addEventListener("submit", async function (event) {
   submitBtn.disabled = true;
 
   try {
-    // Calling Cobalt API (Public instance)
+    // Send request to Cobalt API
     const response = await fetch("https://api.cobalt.tools/api/json", {
       method: "POST",
       headers: {
@@ -42,7 +41,7 @@ form.addEventListener("submit", async function (event) {
     const data = await response.json();
 
     if (data.url) {
-      // Redirect or open direct download link
+      // Redirect to the direct media stream URL
       window.location.href = data.url;
     } else {
       alert("Could not process video. Make sure the link is public.");
@@ -51,23 +50,6 @@ form.addEventListener("submit", async function (event) {
     console.error("Download failed:", error);
     alert("Failed to connect to video service. Try again later.");
   } finally {
-    submitBtn.innerText = originalBtnText;
-    submitBtn.disabled = false;
-  }
-});
-    const data = await response.json();
-
-    if (response.ok && data.downloadUrl) {
-      // Trigger file download or redirect to direct video URL
-      window.location.href = data.downloadUrl;
-    } else {
-      alert(data.message || "Error processing video download.");
-    }
-  } catch (error) {
-    console.error("Download failed:", error);
-    alert("Unable to reach backend server. Please check your connection.");
-  } finally {
-    // Reset Button State
     submitBtn.innerText = originalBtnText;
     submitBtn.disabled = false;
   }
