@@ -3,6 +3,9 @@ const videoURL = document.querySelector("#video-url");
 const quality = document.querySelector("#quality");
 const submitBtn = form.querySelector("button[type='submit']");
 
+// Your active Cloudflare Worker URL
+const WORKER_URL = "https://promax-downloader-api.promaxwaqas.workers.dev";
+
 form.addEventListener("submit", async function (event) {
   event.preventDefault();
 
@@ -20,7 +23,7 @@ form.addEventListener("submit", async function (event) {
     return;
   }
 
-  // Clean trailing tracking parameters from URL
+  // Remove Instagram tracking parameters
   if (url.includes("?")) {
     url = url.split("?")[0];
   }
@@ -30,32 +33,26 @@ form.addEventListener("submit", async function (event) {
   submitBtn.disabled = true;
 
   try {
-    // Request via CORS proxy to bypass browser restrictions
-    const response = await fetch("https://corsproxy.io/?" + encodeURIComponent("https://api.cobalt.tools/api/json"), {
+    const response = await fetch(WORKER_URL, {
       method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        url: url,
-        videoQuality: quality.value || "auto"
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: url })
     });
 
     const data = await response.json();
 
     if (data.url) {
+      // Single video download link
       window.location.href = data.url;
-    } else if (data.picker) {
-      // Handles multi-item posts/slideshows
+    } else if (data.picker && data.picker.length > 0) {
+      // Carousel / Multi-item reel link
       window.location.href = data.picker[0].url;
     } else {
-      alert("Could not process this link. Make sure the account/video is public.");
+      alert("Could not process video. Make sure the video link is from a public post.");
     }
   } catch (error) {
-    console.error("Download failed:", error);
-    alert("Service busy or blocked by host. Please try again in a few seconds.");
+    console.error("Download error:", error);
+    alert("Error reaching backend service. Please try again.");
   } finally {
     submitBtn.innerText = originalBtnText;
     submitBtn.disabled = false;
