@@ -1,9 +1,7 @@
 const form = document.querySelector("form");
 const videoURL = document.querySelector("#video-url");
-const quality = document.querySelector("#quality");
 const submitBtn = form.querySelector("button[type='submit']");
 
-// Your active Cloudflare Worker URL
 const WORKER_URL = "https://promax-downloader-api.promaxwaqas.workers.dev";
 
 form.addEventListener("submit", async function (event) {
@@ -23,7 +21,7 @@ form.addEventListener("submit", async function (event) {
     return;
   }
 
-  // Remove Instagram tracking parameters
+  // Strip query parameters
   if (url.includes("?")) {
     url = url.split("?")[0];
   }
@@ -42,17 +40,14 @@ form.addEventListener("submit", async function (event) {
     const data = await response.json();
 
     if (data.url) {
-      // Single video download link
+      // Trigger download/redirect directly to video stream
       window.location.href = data.url;
-    } else if (data.picker && data.picker.length > 0) {
-      // Carousel / Multi-item reel link
-      window.location.href = data.picker[0].url;
     } else {
-      alert("Could not process video. Make sure the video link is from a public post.");
+      alert("Could not process this video. Please verify the URL and try again.");
     }
   } catch (error) {
     console.error("Download error:", error);
-    alert("Error reaching backend service. Please try again.");
+    alert("Error reaching backend worker. Please try again.");
   } finally {
     submitBtn.innerText = originalBtnText;
     submitBtn.disabled = false;
