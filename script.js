@@ -3,6 +3,7 @@ const videoURL = document.querySelector("#video-url");
 const submitBtn = form.querySelector("button[type='submit']");
 
 const WORKER_URL = "https://promax-downloader-api.promaxwaqas.workers.dev";
+const BACKEND_URL = "https://promax-backend.vercel.app/download";
 
 form.addEventListener("submit", async function (event) {
   event.preventDefault();
